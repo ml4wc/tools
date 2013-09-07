@@ -1,0 +1,165 @@
+#!/usr/bin/python
+"""
+Michael Lindberg
+Hall Lab
+University of Virginia
+"""
+
+import sys
+import re
+import getopt
+import os
+
+
+rangePattern    = '(^[0-9]+\-[0-9]+$)'
+numericPatter   = '^(-[0-9]+|[0-9]+)'
+rangeSearch     = re.compile(rangePattern)
+numericSearch   = re.compile(numericPatter)
+
+
+
+
+class FIELDS (object):
+	"""                                                                                                  
+	struct to store and parse fields parameter                               
+	"""
+	def __init__(self, fieldList = []):
+		self.fieldList = fieldList
+		self.columnList = []
+	
+	def getColumns(self):
+		for i in xrange(len(self.fieldList)):
+			if rangeSearch.search(self.fieldList[i]):
+				##This is a range
+				rangePair = self.fieldList[i].split("-")
+				if int(rangePair[0]) < int(rangePair[1]):
+					#This is a normal increasing range
+					a = range(int(rangePair[0])-1, int(rangePair[1]))
+					for el in a:
+						self.columnList.append(int(el))
+				elif int(rangePair[0]) > int(rangePair[1]):
+					#This is a strange decreasing range
+					a = range(int(rangePair[1])-1, int(rangePair[0]))
+					a.reverse()
+					for el in a:
+						self.columnList.append(int(el))
+				else:
+					self.columnList.append(int(rangePair[1])-1)
+					#This is a digit you ass
+			elif numericSearch.search(self.fieldList[i]):
+				#This is a digit, subtract 1 -- store in stack
+				if int(self.fieldList[i]) > 0:
+					self.columnList.append(int(self.fieldList[i])-1)
+				#This thing is negative
+				elif int(self.fieldList[i]) < 0:
+					self.columnList.append(int(self.fieldList[i]))						
+			else:
+				print >> sys.stderr, "Illegal list value"
+				sys.exit(2)
+				#This is not a range or a digit, something funky
+
+
+def parse(f, fields, delim):
+	fieldList = fields.split(",")
+	field = FIELDS(fieldList)
+	field.getColumns()		
+	isLine1 = 1
+	Line1Len = 0
+	for line in f:
+		finalLine = []
+		if delim:
+			inputLine = line.strip().split(str(delim))
+		else:
+			inputLine = line.strip().split()
+		#check integrity of file
+		if isLine1:
+			Line1Len = len(inputLine)
+			isLine1 = 0
+		elif isLine1 == 0:
+			if len(inputLine) != Line1Len:
+				print >> sys.stderr, "Encountered a variable number of fields in file"
+		for el in field.columnList:
+			if (el >= 0) and (el < len(inputLine)):
+				#positive list values
+				finalLine.append(inputLine[el])
+			elif (el < 0) and (el*-1 < len(inputLine)+1):
+				#negative list values
+				finalLine.append(inputLine[el])
+			elif (el >= len(inputLine)):
+				#requesting beyond the number of fields 
+				pass
+			else:
+				print >> sys.stderr, "Illegal list value"
+				sys.exit(2)
+		if delim:
+			print delim.join(finalLine)
+		else:
+			print "\t".join(finalLine)
+
+def usage():
+        # Get the program name without the full pathname.                                                                                                                                      
+		prog_name = os.path.basename(sys.argv[0])
+		usage = """Usage:
+		###############
+		##Stand Alone##
+		###############
+		%s -f fields (req) -d delim (default: any whitespace)  <FILENAME> (req)\n\n
+		###############
+		##Use in Pipe##
+		###############
+		cat foo | %s -f fields (req) -d delim (default: any whitespace)\n
+		The fields will be output in the literal order that they are given.\n
+		Ex:
+		zcut -f 4,1-3,25,6-24 <tab delimited file>\n
+		The output will put col 4 into col 1, col 1-3 into cols 2-4,\n		col 25 in col 5, and col 6-24 into col 6-24\n
+		Even reports columns backwards if you so choose!
+		In the example above, -f 24-6 will result in printing col 24-6 into col 6-24 
+		Duplicate columns supported
+		Negative columns supported
+
+		""" % (prog_name, prog_name)
+		print >> sys.stderr, usage
+
+
+
+def main():
+	try:
+		opts, args = getopt.getopt(sys.argv[1:], "d:f:h", ["delim=", "fields=", "help"])
+	except getopt.GetoptError, err:
+		# print help information and exit:
+		print str(err) # will print something like "option -a not recognized"
+		usage()
+		sys.exit(2)
+	f = None
+	fields = None
+	delim = None
+	for o, a in opts:
+		if o in ("-h", "--help"):
+			usage()
+			sys.exit()
+		elif o in ("-d", "--delim"):
+			delim = str(a)
+		elif o in ("-f", "--fields"):
+			fields = str(a)
+		else:
+			assert False, "unhandled option"
+	#Look at input
+	if len(args) == 0:
+		f = sys.stdin
+	elif len(args) == 1:
+		f = open(args[0], 'r')
+	else:
+		usage()
+		sys.exit(2)
+		
+	if fields and f:
+		parse(f, fields, delim)	
+	else: 
+		usage()
+		sys.exit(2)
+
+
+
+if __name__ == "__main__":
+        main()
+
