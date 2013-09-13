@@ -152,8 +152,7 @@ void cgrep_help(void) {
     cerr << "Options: " << endl;
     cerr << "\t-d\t"                    << "Delimiter (default = tab)" << endl;
 
-    // end the program here
-    exit(1);
+    return 0;
 }
 
 
