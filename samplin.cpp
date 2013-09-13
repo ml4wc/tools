@@ -181,7 +181,9 @@ void largeSamp(unsigned long numLines, unsigned long* pickArray, string file)
 		n2++;
 		if (n2 != pickArray[c]) {
 			cout << line << endl;
-			c++;
+		}
+		else {
+			c++
 		}
 	}
 }
