@@ -126,20 +126,6 @@ void Tokenize(const string &str, vector<string> &elems, const string &delimiter)
         tok = strtok(NULL, delimiter.c_str());
     }
 }
-	//if (strcmp(file.c_str(),"stdin") == 0)
-	//	fp = stdin;
-	//else
-	//	fp = fopen(file.c_str(), "r");
-	//	if (fp == NULL) {
-	//		cerr << file << " : No such file or directory" << endl;
-	//		exit(1);
-	//	}
-	//while(fgets(str,sizeof(str),fp) != NULL) {
-	//	printf("%sFOO", "Encountered a Tab");
-	//	} 
-
-	//	pos = str.c_str().find(searchStr));
-	//	printf("%", pos);
 
 
 
@@ -152,7 +138,7 @@ void cgrep_help(void) {
     cerr << "Options: " << endl;
     cerr << "\t-d\t"                    << "Delimiter (default = tab)" << endl;
 
-    return 0;
+    return 1;
 }
 
 
