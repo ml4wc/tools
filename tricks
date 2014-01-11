@@ -1,0 +1,48 @@
+
+
+xargs example:
+
+ls foo | xargs -I % rm foo
+
+argparse example:
+
+def get_args():
+    parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter, description="\
+program " + __version__ + "\n\
+author: " + __author__ + "\n\
+description: Calculate basic numeric statistics")
+    parser.add_argument('-d', '--int', action='store_true', help='some flag')
+    parser.add_argument('-f', '--flag', action='store_true', help='some flag')
+    parser.add_argument('file', nargs='?', type=argparse.FileType('r'), default=None, help='file to be read. (default: stdin)')
+
+    # parse the arguments
+    args = parser.parse_args()
+
+    # if no input, check if part of pipe and if so, read stdin.
+    if args.data == None:
+        if sys.stdin.isatty():
+            parser.print_help()
+            exit(1)
+        else:
+            args.data = sys.stdin
+    return args
+
+# main function
+
+def main():
+    # parse the command line args
+    args = get_args()
+
+    # store into global values
+    file = args.file
+    flag = args.flag
+    
+    # call primary function
+    func(data, flag)
+    
+    # close the file
+    file.close()
+
+# initialize the script
+if __name__ == '__main__':
+    sys.exit(main())
