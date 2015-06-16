@@ -1,5 +1,8 @@
 
 
+fastq to fasta:
+sed -n '1~4s/^@/>/p;2~4p' 
+
 xargs example:
 
 ls foo | xargs -I % rm foo
