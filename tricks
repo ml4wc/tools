@@ -49,3 +49,9 @@ def main():
 # initialize the script
 if __name__ == '__main__':
     sys.exit(main())
+
+
+
+##Highlight tabs in file
+
+cat -t FILE | grep --color "\^I
